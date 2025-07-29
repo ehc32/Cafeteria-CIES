@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  height: 100vh;
+}
+
+
+.canvasjs-chart-credit {
+  display: none;
+}
+
+.cont-grafica {
+  width: 70%;
+  height: 80vh;
+  object-fit: contain;
+  align-self: flex-end;
+  z-index: 100;
+  margin: 5em auto 5em 27%;
+  border: none;
+  overflow-y: hidden;
+}
+
+@media (max-width: 1200px) {
+  .cont-grafica  {
+    
+  margin: auto;
+  }
+}

@@ -1,0 +1,36 @@
+/* #workSpace {
+    padding-top: 5vw;
+    padding-left: 8vw;
+    width: 90vw;
+    height: 90vh;
+    position: relative;
+} */
+
+/*--------------------------------------------------------------
+# Iframe
+--------------------------------------------------------------*/
+
+.home-section {
+    padding-top: 5vw;
+    padding-left: 2vw;
+    position: absolute;
+    background: #fff;
+    height: 93vh;
+    top: 6%;
+    right: 0;
+    width: calc(100% - 300px);
+    transition: all 0.5s ease;
+    z-index: 2;
+    overflow-y: scroll;
+}
+  
+@media (min-width: 1200px) {
+    .home-section {
+        margin-left: 190px;
+    }
+  
+    .toggle-sidebar .home-section {
+      margin-left: 0;
+      width: 100%;
+    }
+}

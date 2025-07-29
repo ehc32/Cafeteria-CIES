@@ -1,0 +1,215 @@
+/* ===================================
+   ESTILOS PARA EL MÓDULO DE VENTAS
+   =================================== */
+
+/* ===================================
+   DATA TABLE - CONFIGURACIÓN GENERAL
+   =================================== */
+
+.dataTables_wrapper {
+    width: 100%;
+}
+
+.dataTables_wrapper .dataTable {
+    width: 100% !important;
+    table-layout: auto;
+}
+
+/* ===================================
+   FILTROS Y BÚSQUEDA
+   =================================== */
+
+.dataTables_wrapper .dataTables_filter {
+    text-align: left !important;
+    margin-bottom: 15px;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    border: 1px solid #e5e9f2;
+    border-radius: 4px;
+    padding: 8px 12px;
+    width: 250px;
+    margin-left: 0;
+}
+
+/* ===================================
+   SELECTOR DE REGISTROS Y BOTONES
+   =================================== */
+
+.dataTables_wrapper .dataTables_length {
+    text-align: right !important;
+    margin-bottom: 15px;
+    margin-right: 15px;
+}
+
+.dataTables_wrapper .dt-buttons {
+    text-align: right !important;
+    margin-bottom: 15px;
+}
+
+/* Agrupar dropdown y botones en la misma línea */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dt-buttons {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.dataTables_wrapper .dt-buttons .btn {
+    margin-left: 5px;
+    border-radius: 4px;
+}
+
+/* ===================================
+   INFORMACIÓN Y PAGINACIÓN
+   =================================== */
+
+.dataTables_wrapper .dataTables_info {
+    text-align: right;
+    padding-top: 15px;
+    margin-top: 5px;
+    line-height: 35px;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+    text-align: left;
+    padding-top: 15px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    border-radius: 4px;
+    margin: 0 2px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #6576ff;
+    border-color: #6576ff;
+    color: white !important;
+}
+
+/* ===================================
+   RESPONSIVE DESIGN
+   =================================== */
+
+/* Pantallas medianas (tablets) */
+@media (max-width: 768px) {
+    .dataTables_wrapper .dataTables_filter {
+        text-align: center !important;
+        margin-bottom: 10px;
+    }
+    
+    .dataTables_wrapper .dataTables_filter input {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .dataTables_wrapper .dataTables_length {
+        text-align: center !important;
+        margin-bottom: 10px;
+    }
+    
+    .dataTables_wrapper .dt-buttons {
+        text-align: center !important;
+        margin-bottom: 10px;
+    }
+    
+    .dataTables_wrapper .dt-buttons .btn {
+        margin: 2px;
+        font-size: 12px;
+        padding: 5px 8px;
+    }
+    
+    .dataTables_wrapper .dataTables_info {
+        text-align: center !important;
+        margin-top: 10px;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate {
+        text-align: center !important;
+        margin-top: 10px;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        margin: 2px;
+        font-size: 12px;
+        padding: 5px 8px;
+    }
+}
+
+/* Pantallas pequeñas (móviles) */
+@media (max-width: 576px) {
+    .dataTables_wrapper .dataTable {
+        font-size: 12px;
+    }
+    
+    .dataTables_wrapper .dataTable th,
+    .dataTables_wrapper .dataTable td {
+        padding: 8px 4px;
+    }
+    
+    .dataTables_wrapper .dt-buttons .btn {
+        font-size: 11px;
+        padding: 4px 6px;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        font-size: 11px;
+        padding: 4px 6px;
+    }
+}
+
+/* ===================================
+   ESTILOS ADICIONALES PARA VENTAS
+   =================================== */
+
+/* Mejoras en el formulario de filtros */
+.ventas-filters .form-group {
+    margin-bottom: 15px;
+}
+
+.ventas-filters .form-control {
+    border-radius: 4px;
+}
+
+.ventas-filters .btn {
+    border-radius: 4px;
+    margin-right: 5px;
+}
+
+/* Estilos para el modal de edición */
+.modal-ventas .modal-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e5e9f2;
+}
+
+.modal-ventas .modal-title {
+    color: #364a63;
+    font-weight: 600;
+}
+
+.modal-ventas .form-control {
+    border-radius: 4px;
+}
+
+.modal-ventas .btn {
+    border-radius: 4px;
+}
+
+/* Animaciones suaves */
+.dataTables_wrapper .dataTable tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.dataTables_wrapper .dataTable tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Estilos para botones de acción */
+.btn-action {
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+} 

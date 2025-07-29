@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "aos": "^2.3.4",
+    "axios": "^1.5.1",
+    "bootstrap": "^5.3.2",
+    "bootstrap-icons": "^1.11.1",
+    "datatables": "^1.10.18",
+    "jquery": "^3.7.1",
+    "onnxjs": "^0.1.8",
+    "sweetalert2": "^11.7.32",
+    "swiper": "^11.0.2",
+    "xlsx": "^0.18.5"
+  }
+}

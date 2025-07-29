@@ -1,0 +1,168 @@
+* {
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
+}
+
+header {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  padding: 20px 100px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 99;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(../Img/fondo.jpg) center center;
+  background-size: cover;
+  background-position: center;
+}
+
+.logo {
+  position: absolute;
+  left: .5em;
+  top: .5em;
+}
+
+.logo img {
+  height: 10em !important;
+  width: 11em !important;
+}
+
+.wrapper {
+  position: relative;
+  width: 400px;
+  height: 440px;
+  background-color: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.wrapper.active {
+  height: 490px;
+}
+
+.wrapper .form-box {
+  width: 100%;
+  padding: 40px;
+}
+
+.form-box h2 {
+  font-size: 2em;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 2em;
+}
+
+.input-box {
+  position: relative;
+  width: 100%;
+  height: 50px;
+  border-bottom: #000 solid 2px;
+  margin: 30px 0;
+}
+
+.input-box label {
+  position: absolute;
+  top: 50%;
+  left: 5px;
+  transform: translateY(-75%);
+  font-size: 28px;
+  color: #fff;
+  font-weight: 500;
+  pointer-events: none;
+  transition: 0.5s;
+}
+
+.input-box input:focus~label,
+.input-box input:valid~label {
+  top: -5px;
+}
+
+.input-box input {
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-weight: 100;
+  padding: 0 25px 0 25px;
+}
+
+.input-box .icon {
+  position: absolute;
+  right: 2px;
+  top: -16px;
+  transform: scale(1.4);
+}
+
+.btnLogin:hover {
+  background-color: #fff;
+  color: #000;
+  cursor: pointer;
+  transition: all .5s ease-in-out;
+}
+
+.btnLogin:hover>a {
+  color: #000;
+}
+
+.btnLogin>a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.btnLogin {
+  width: 100%;
+  height: 45px;
+  background-color: #000;
+  color: #fff;
+  border-radius: 7px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: 500;
+  transition: .4s ease;
+  margin-top: 1em;
+}
+
+.wrapper .icon-close {
+  position: absolute;
+  top: 20px;
+  right: 10px;
+  width: 45px;
+  height: 45px;
+  color: #fff;
+  font-size: 2em;
+  transition: 0.5s;
+}
+
+.bi-x:hover {
+  cursor: pointer;
+  transform: rotate(360deg);
+  transform-origin: center;
+  transition: 0.4s;
+}
+
+.icon>.bi-person,
+.bi-key {
+  position: absolute;
+  top: 20px;
+  right: 10px;
+}
