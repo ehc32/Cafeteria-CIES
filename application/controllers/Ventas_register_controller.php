@@ -11,6 +11,12 @@ class Ventas_register_controller extends Core_Controller
         $this->load->model('Ventas_model');
         $this->load->model('Users_model');
         $this->load->helper('custom_helper');
+        
+        // Cargar autoload de Composer si existe
+        $composer_autoload = APPPATH . '../vendor/autoload.php';
+        if (file_exists($composer_autoload)) {
+            require_once $composer_autoload;
+        }
     }
 
     public function detalle_venta($id)
@@ -268,6 +274,261 @@ class Ventas_register_controller extends Core_Controller
         echo json_encode($response);
     }
 
+    public function imprimir_factura($id)
+    {
+        $data['title'] = "Detalle de venta";
+        $data['application_name'] = $this->settings->application_name;
+        $data['description'] = $this->settings->site_description;
+        $data['keywords'] = $this->settings->keywords;
+        $data['detalle_venta'] = $this->Ventas_Register_Model->get_by_id($id);
+        $this->load->view('admin/imprimir_factura', $data);
+    }
+
+    // ===================================
+    // MÉTODOS DE EXPORTACIÓN COMPLETA
+    // ===================================
+
+    /**
+     * Exporta todas las ventas filtradas a XLSX (Excel real)
+     */
+    public function export_xlsx()
+    {
+        try {
+            // Obtener filtros de fecha
+            $fechaInicio = $this->input->get('fecha_inicio');
+            $fechaFinal = $this->input->get('fecha_final');
+            
+            // Obtener todos los datos filtrados (sin paginación)
+            if ($fechaInicio && $fechaFinal) {
+                $ventas = $this->Ventas_Register_Model->obtener_ventas_filtradas_exportacion($fechaInicio, $fechaFinal);
+            } else {
+                $ventas = $this->Ventas_Register_Model->obtener_ventas();
+            }
+
+            // Preparar datos para XLSX
+            $excel_data = array();
+            $excel_data[] = array(
+                'Producto Vendido',
+                'Valor Unitario',
+                'Cantidad', 
+                'Valor Total',
+                'Descuento',
+                'Fecha de Venta',
+                'Vendedor',
+                'Número de Referencia'
+            );
+
+            foreach ($ventas as $venta) {
+                $productos_vendidos = json_decode($venta->productos_vendidos, true);
+                if (!empty($productos_vendidos)) {
+                    foreach ($productos_vendidos as $producto) {
+                        $excel_data[] = array(
+                            $producto['producto'],
+                            '$' . $producto['valor_unitario'],
+                            $producto['cantidad'],
+                            '$' . $producto['subtotal'],
+                            '$' . number_format($venta->descuento, 0),
+                            $venta->created,
+                            $venta->vendedor_username,
+                            empty($venta->num_referencia) ? 'Efectivo' : $venta->num_referencia
+                        );
+                    }
+                }
+            }
+
+            // Verificar si PhpSpreadsheet está disponible
+            if (class_exists('PhpOffice\PhpSpreadsheet\Spreadsheet')) {
+                // Configurar headers para XLSX
+                $filename = 'ventas_' . date('Y-m-d_H-i-s');
+                if ($fechaInicio && $fechaFinal) {
+                    $filename .= '_' . $fechaInicio . '_a_' . $fechaFinal;
+                }
+                $filename .= '.xlsx';
+
+                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                header('Content-Disposition: attachment;filename="' . $filename . '"');
+                header('Cache-Control: max-age=0');
+
+                $this->create_xlsx_file($excel_data, $filename);
+            } else {
+                // Fallback: generar CSV con extensión .csv
+                $filename = 'ventas_' . date('Y-m-d_H-i-s');
+                if ($fechaInicio && $fechaFinal) {
+                    $filename .= '_' . $fechaInicio . '_a_' . $fechaFinal;
+                }
+                $filename .= '.csv';
+
+                header('Content-Type: text/csv; charset=utf-8');
+                header('Content-Disposition: attachment; filename="' . $filename . '"');
+                header('Cache-Control: max-age=0');
+
+                $this->create_csv_file($excel_data, $filename);
+            }
+        } catch (Exception $e) {
+            // Log del error
+            log_message('error', 'Error en export_xlsx: ' . $e->getMessage());
+            
+            // Redirigir con mensaje de error
+            $this->session->set_flashdata('error', 'Error al generar el archivo XLSX. Intente con CSV o PDF.');
+            redirect('admin/ventas');
+        }
+    }
+
+    /**
+     * Exporta todas las ventas filtradas a CSV
+     */
+    public function export_csv()
+    {
+        // Obtener filtros de fecha
+        $fechaInicio = $this->input->get('fecha_inicio');
+        $fechaFinal = $this->input->get('fecha_final');
+        
+        // Obtener todos los datos filtrados (sin paginación)
+        if ($fechaInicio && $fechaFinal) {
+            $ventas = $this->Ventas_Register_Model->obtener_ventas_filtradas_exportacion($fechaInicio, $fechaFinal);
+        } else {
+            $ventas = $this->Ventas_Register_Model->obtener_ventas();
+        }
+
+        // Configurar headers para descarga
+        $filename = 'ventas_' . date('Y-m-d_H-i-s');
+        if ($fechaInicio && $fechaFinal) {
+            $filename .= '_' . $fechaInicio . '_a_' . $fechaFinal;
+        }
+        $filename .= '.csv';
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        // Crear archivo CSV
+        $output = fopen('php://output', 'w');
+        
+        // BOM para UTF-8
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+        
+        // Encabezados
+        fputcsv($output, array(
+            'Producto Vendido',
+            'Valor Unitario', 
+            'Cantidad',
+            'Valor Total',
+            'Descuento',
+            'Fecha de Venta',
+            'Vendedor',
+            'Número de Referencia'
+        ));
+
+        // Datos
+        foreach ($ventas as $venta) {
+            $productos_vendidos = json_decode($venta->productos_vendidos, true);
+            if (!empty($productos_vendidos)) {
+                foreach ($productos_vendidos as $producto) {
+                    fputcsv($output, array(
+                        $producto['producto'],
+                        '$' . $producto['valor_unitario'],
+                        $producto['cantidad'],
+                        '$' . $producto['subtotal'],
+                        '$' . number_format($venta->descuento, 0),
+                        $venta->created,
+                        $venta->vendedor_username,
+                        empty($venta->num_referencia) ? 'Efectivo' : $venta->num_referencia
+                    ));
+                }
+            }
+        }
+
+        fclose($output);
+        exit;
+    }
+
+    /**
+     * Exporta todas las ventas filtradas a PDF
+     */
+    public function export_pdf()
+    {
+        // Cargar la librería PDF
+        $this->load->library('Pdf');
+        
+        // Obtener filtros de fecha
+        $fechaInicio = $this->input->get('fecha_inicio');
+        $fechaFinal = $this->input->get('fecha_final');
+        
+        // Obtener todos los datos filtrados (sin paginación)
+        if ($fechaInicio && $fechaFinal) {
+            $ventas = $this->Ventas_Register_Model->obtener_ventas_filtradas_exportacion($fechaInicio, $fechaFinal);
+        } else {
+            $ventas = $this->Ventas_Register_Model->obtener_ventas();
+        }
+
+        // Preparar datos para la librería PDF
+        $data = array(
+            'ventas' => $ventas,
+            'fecha_inicio' => $fechaInicio,
+            'fecha_final' => $fechaFinal,
+            'title' => "Reporte de Ventas",
+            'application_name' => $this->settings->application_name
+        );
+
+        // Configurar nombre del archivo
+        $filename = 'ventas_' . date('Y-m-d_H-i-s');
+        if ($fechaInicio && $fechaFinal) {
+            $filename .= '_' . $fechaInicio . '_a_' . $fechaFinal;
+        }
+        $filename .= '.pdf';
+
+        // Generar PDF usando la librería optimizada
+        $this->pdf->generate_simple_pdf($data, $filename);
+    }
+
+    /**
+     * Crea archivo XLSX usando PhpSpreadsheet
+     */
+    private function create_xlsx_file($data, $filename)
+    {
+        try {
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // Agregar datos
+            foreach ($data as $row_index => $row_data) {
+                foreach ($row_data as $col_index => $value) {
+                    $sheet->setCellValueByColumnAndRow($col_index + 1, $row_index + 1, $value);
+                }
+            }
+
+            // Autoajustar columnas
+            foreach (range(1, count($data[0])) as $col) {
+                $sheet->getColumnDimensionByColumn($col)->setAutoSize(true);
+            }
+
+            // Crear writer
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+            $writer->save('php://output');
+            
+        } catch (Exception $e) {
+            // Si falla, generar CSV como fallback
+            $this->create_csv_file($data, 'ventas_' . date('Y-m-d_H-i-s') . '.csv');
+        }
+    }
+
+    /**
+     * Crea archivo CSV válido
+     */
+    private function create_csv_file($data, $filename)
+    {
+        $output = fopen('php://output', 'w');
+        
+        // BOM para UTF-8
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+        
+        foreach ($data as $row) {
+            fputcsv($output, $row);
+        }
+        
+        fclose($output);
+    }
+
     public function cargar_vistas($data)
     {
         $data['title'] = "Detalle de venta";
@@ -277,15 +538,5 @@ class Ventas_register_controller extends Core_Controller
         $this->load->view("admin/includes/_header", $data);
         $this->load->view("admin/includes/_sidebar", $data);
         $this->load->view('admin/ventas', $data);
-    }
-
-    public function imprimir_factura($id)
-    {
-        $data['title'] = "Detalle de venta";
-        $data['application_name'] = $this->settings->application_name;
-        $data['description'] = $this->settings->site_description;
-        $data['keywords'] = $this->settings->keywords;
-        $data['detalle_venta'] = $this->Ventas_Register_Model->get_by_id($id);
-        $this->load->view('admin/imprimir_factura', $data);
     }
 }
