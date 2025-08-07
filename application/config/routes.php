@@ -82,18 +82,18 @@ $route['admin/email-settings']['GET']     = 'email_controller';
 
 // Inventario 
 $route['admin/inventario']['GET']             = 'inventario_controller/inventario'; 
-$route['admin/inventario-comercio']['GET']             = 'inventario__comercio_controller/inventario';
+$route['admin/inventario-comercio']['GET']             = 'inventario_comercio_controller/inventario';
 $route['admin/inventario/create']['GET']      = 'inventario_controller/create';    
 $route['admin/inventario/create']['POST']     = 'inventario_controller/create';     
 $route['admin/inventario/edit/(:num)']['GET'] = 'inventario_controller/edit/$id'; 
 $route['admin/inventario/edit/(:num)']['POST'] = 'inventario_controller/edit/$id';  
 $route['admin/inventario/delete/(:num)']['POST'] = 'inventario_controller/delete/$id';
+$route['admin/inventario/delete']['POST'] = 'inventario_controller/delete';
+$route['Inventario_controller/get_productos_by_sede']['POST'] = 'inventario_controller/get_productos_by_sede';
+$route['inventario_controller/registerProduct']['POST'] = 'inventario_controller/registerProduct';
 
-$route['admin/inventario/create']['GET']      = 'inventario_comercio_controller/create';    
-$route['admin/inventario/create']['POST']     = 'inventario_comercio_controller/create';     
-$route['admin/inventario/edit/(:num)']['GET'] = 'inventario_comercio_controller/edit/$id'; 
-$route['admin/inventario/edit/(:num)']['POST'] = 'inventario_comercio_controller/edit/$id';  
-$route['admin/inventario/delete/(:num)']['POST'] = 'inventario_comercio_controller/delete/$id';
+
+
 
 
 

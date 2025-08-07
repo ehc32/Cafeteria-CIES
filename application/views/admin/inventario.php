@@ -164,6 +164,22 @@
                                         <div class="row g-3 align-center">
                                             <div class="col-lg-3 offset-0">
                                                 <div class="form-group">
+                                                    <label class="form-label">Valor Unitario (Opcional)</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-7 mb-3">
+                                                <div class="form-group">
+                                                    <div class="form-control-wrap">
+                                                        <input type="number" step="0.01" autocomplete="off" class="form-control form-control-lg" id="valor_unitario" name="valor_unitario" placeholder="Ingrese el precio unitario (opcional)">
+                                                        <div class="form-note">Este precio se usará automáticamente en el módulo de ventas</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-3 align-center">
+                                            <div class="col-lg-3 offset-0">
+                                                <div class="form-group">
                                                     <label class="form-label">Categoría</label>
                                                 </div>
                                             </div>
@@ -183,7 +199,26 @@
                                             </div>
                                         </div>
 
-                                        <input type="hidden" name="sede" id="hidden_sede">
+                                        <div class="row g-3 align-center">
+                                            <div class="col-lg-3 offset-0">
+                                                <div class="form-group">
+                                                    <label class="form-label">Sede</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-7 mb-3">
+                                                <div class="form-group">
+                                                    <div class="form-control-wrap">
+                                                        <select class="form-select" data-placeholder="Seleccione la sede" id="modal_sede" name="sede" required="">
+                                                            <option value="">Seleccione una sede</option>
+                                                            <option value="CIES">CIES</option>
+                                                            <option value="Comercio">Comercio</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <input type="hidden" name="sede" id="hidden_sede" value="">
                                         <div class="row g-gs">
                                             <div class="col-md-12 mt-3">
                                                 <div class="form-group">
@@ -210,6 +245,7 @@
                                             <th>Nombre del producto</th>
                                             <th>Presentación</th>
                                             <th>Cantidad</th>
+                                            <th>Valor Unitario</th>
                                             <th>Categoría</th>
                                             <th>Fecha de reporte</th>
                                             <th>Acciones</th>
@@ -242,20 +278,27 @@
 
     const sedeSelect = document.getElementById('sede');
     const hiddenSedeInput = document.getElementById('hidden_sede');
+    const modalSedeSelect = document.getElementById('modal_sede');
+    
     sedeSelect.addEventListener('change', function() {
         hiddenSedeInput.value = this.value;
     });
+    
+    modalSedeSelect.addEventListener('change', function() {
+        hiddenSedeInput.value = this.value;
+    });
     // Función para abrir el modal en modo de edición
-    function editProduct(id, nombre, presentacion, cantidad, categoria, sede) {
+    function editProduct(id, nombre, presentacion, cantidad, categoria, sede, valor_unitario) {
         modalProductForm.show();
         document.getElementById('product_id').value = id;
         document.getElementById('nombre').value = nombre;
         document.getElementById('cantidad').value = cantidad;
-        const sedeSelect = document.getElementById('sede');
-        sedeSelect.value = sede;
+        document.getElementById('valor_unitario').value = valor_unitario || '';
+        const modalSedeSelect = document.getElementById('modal_sede');
+        modalSedeSelect.value = sede;
 
         // Actualizar el campo oculto de sede
-        const hiddenSedeInput = document.getElementById('sede');
+        const hiddenSedeInput = document.getElementById('hidden_sede');
         hiddenSedeInput.value = sede;
 
         const presentacionSelect = document.getElementById('presentacion');
@@ -287,7 +330,9 @@
         document.getElementById('nombre').value = '';
         document.getElementById('presentacion').value = '';
         document.getElementById('cantidad').value = '';
+        document.getElementById('valor_unitario').value = '';
         document.getElementById('categoria').value = '';
+        document.getElementById('modal_sede').value = '';
 
         document.getElementById('modalProductFormTitle').innerText = 'Agregar Nuevo Producto';
         document.getElementById('submit-button').innerText = 'Agregar producto';
@@ -295,6 +340,34 @@
 
 
 
+
+    // Función para eliminar productos
+    function delete_item(url, id, message, sede) {
+        if (confirm('¿Está seguro de que desea eliminar este producto?')) {
+            $.ajax({
+                type: 'POST',
+                url: '<?php echo base_url(); ?>admin/inventario/delete',
+                data: {
+                    id: id,
+                    sede: sede
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status) {
+                        alert(message);
+                        // Recargar la tabla
+                        $('#sede').trigger('change');
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Error al eliminar el producto');
+                    console.log('Error AJAX:', error);
+                }
+            });
+        }
+    }
 
     $(document).ready(function() {
         $('#sede').change(function() {
@@ -316,6 +389,7 @@
                             <td>` + item.nombre + `</td>
                             <td>` + item.presentacion + `</td>
                             <td>` + item.cantidad + `</td>
+                            <td>` + (item.valor_unitario ? '$' + parseFloat(item.valor_unitario).toLocaleString() : 'No definido') + `</td>
                             <td>` + item.categoria + `</td>
                             <td>` + item.created + `</td>
                             <td>
@@ -325,13 +399,14 @@
                                     '` + item.presentacion + `',
                                     '` + item.cantidad + `',
                                     '` + item.categoria + `',
-                                    '` + item.sede + `' 
+                                    '` + item.sede + `',
+                                    '` + (item.valor_unitario || '') + `'
 
                                 );">Editar</a>
                                 
                                 <?php if ($this->session->userdata("is_superuser") === "1") : ?>
                                     <a href="javascript:void(0)" class="btn btn-danger" onclick="delete_item(
-                                        '` + base_url + `admin/inventario/delete/` + item.id + `',
+                                        '<?php echo base_url(); ?>admin/inventario/delete/` + item.id + `',
                                         '` + item.id + `',
                                         'Producto eliminado correctamente!',
                                         '` + item.sede + `'
