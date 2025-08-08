@@ -94,7 +94,17 @@ $route['inventario_controller/registerProduct']['POST'] = 'inventario_controller
 
 
 
-
+// Rutas para Recetas
+$route['admin/recetas'] = 'Recetas_controller/index';
+$route['admin/recetas/add'] = 'Recetas_controller/add';
+$route['admin/recetas/update/(:num)'] = 'Recetas_controller/update/$1';
+$route['admin/recetas/delete'] = 'Recetas_controller/delete';
+$route['admin/recetas/get_receta'] = 'Recetas_controller/get_receta';
+$route['admin/recetas/get_receta_por_nombre']['GET'] = 'Recetas_controller/get_receta_por_nombre';
+$route['admin/recetas/view/(:num)'] = 'Recetas_controller/view/$1';
+$route['admin/recetas/duplicar/(:num)'] = 'Recetas_controller/duplicar/$1';
+$route['admin/recetas/search'] = 'Recetas_controller/search';
+$route['admin/recetas/recalcular_costos'] = 'Recetas_controller/recalcular_costos';
 
 
 

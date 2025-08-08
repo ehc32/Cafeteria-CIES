@@ -285,8 +285,11 @@ public function obtener_ventas_filtradas_paginadas($fechaInicio, $fechaFinal, $l
             $productos_vendidos = json_decode($venta->productos_vendidos, true);
             if (!empty($productos_vendidos)) {
                 foreach ($productos_vendidos as $producto) {
+                    $nombreMostrar = isset($producto['receta_nombre']) && !empty($producto['receta_nombre'])
+                        ? $producto['receta_nombre']
+                        : (isset($producto['producto']) ? $producto['producto'] : '');
                     $processed_data[] = array(
-                        $producto['producto'],
+                        $nombreMostrar,
                         '$' . $producto['valor_unitario'],
                         $producto['cantidad'],
                         '$' . $producto['subtotal'],

@@ -335,6 +335,24 @@
                     <div class="row g-3 align-center">
                         <div class="col-lg-3 offset-0">
                             <div class="form-group">
+                                <label class="form-label">Receta asociada</label>
+                            </div>
+                        </div>
+                        <div class="col-lg-7 mb-3">
+                            <div class="form-group">
+                                <div class="form-control-wrap">
+                                    <select class="form-select" id="receta_asociada" name="receta_asociada" disabled>
+                                        <option value="">Sin receta</option>
+                                    </select>
+                                </div>
+                                <small id="receta_info" class="text-soft d-block mt-1"></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 align-center">
+                        <div class="col-lg-3 offset-0">
+                            <div class="form-group">
                                 <label class="form-label">Valor unitario</label>
                             </div>
                         </div>
@@ -460,7 +478,69 @@
                                 valor_unitario = producto.valor_unitario;
                             }
                         });
+                        // Seteamos precio del producto temporalmente; si hay receta, se sobrescribe abajo
                         $('#valor_unitario').val(valor_unitario);
+
+                        // Consultar receta asociada por nombre (si existe)
+                        if (producto_seleccionado) {
+                            $.ajax({
+                                url: '<?php echo base_url('admin/recetas/get_receta_por_nombre'); ?>',
+                                type: 'GET',
+                                data: { nombre: producto_seleccionado },
+                                success: function(resp) {
+                                    try {
+                                        var r = JSON.parse(resp);
+                                        var recetaSelect = $('#receta_asociada');
+                                        var recetaInfo = $('#receta_info');
+                                        recetaSelect.prop('disabled', true);
+                                        recetaSelect.empty();
+                                        recetaSelect.append('<option value="">Sin receta</option>');
+                                        recetaInfo.text('');
+
+                                        if (r && r.status && r.data) {
+                                            var recetas = Array.isArray(r.data) ? r.data : [r.data];
+                                            var recetasAsociadas = JSON.parse(localStorage.getItem('recetas_asociadas')) || {};
+                                            recetasAsociadas[producto_seleccionado] = recetas;
+                                            localStorage.setItem('recetas_asociadas', JSON.stringify(recetasAsociadas));
+
+        						// Poblar select con todas las recetas
+                                            recetas.forEach(function(receta){
+                                                var costoPorcion = parseFloat(receta.costo_por_porcion || 0);
+                                                var costoPreparacion = parseFloat(receta.costo_total_preparacion || 0);
+                                                // data-costo-prep será la fuente oficial para Valor unitario
+                                                recetaSelect.append('<option value="' + receta.id + '" data-costo-prep="' + costoPreparacion + '" data-costo="' + costoPorcion + '" data-nombre="' + receta.nombre + '">' + receta.nombre + ' (Preparación: $' + costoPreparacion.toFixed(0) + ')</option>');
+                                            });
+                                            recetaSelect.prop('disabled', false);
+                                            recetaInfo.text('Seleccione la receta para usar su costo total de preparación como valor unitario.');
+
+                                            // Seleccionar por defecto la primera receta y usar su costo total de preparación como valor unitario
+                                            var firstOption = recetaSelect.find('option:eq(1)'); // 0 es "Sin receta"
+                                            if (firstOption.length) {
+                                                firstOption.prop('selected', true);
+                                                var costoDefault = parseFloat(firstOption.data('costo-prep')) || parseFloat(firstOption.data('costo')) || 0;
+                                                if (costoDefault > 0) {
+                                                    $('#valor_unitario').val(costoDefault);
+                                                }
+                                            }
+
+                                            // Actualizar valor unitario al cambiar la receta seleccionada
+                                            recetaSelect.off('change.receta').on('change.receta', function(){
+                                                var op = $(this).find(':selected');
+                                                var costoPrep = parseFloat(op.data('costo-prep')) || parseFloat(op.data('costo')) || 0;
+                                                if (costoPrep > 0) {
+                                                    $('#valor_unitario').val(costoPrep);
+                                                }
+                                            });
+                                        } else {
+                                            // No hay receta
+                                            recetaSelect.prop('disabled', true);
+                                            recetaInfo.text('Este producto no tiene receta asociada.');
+                                            // El valor unitario queda como el del producto
+                                        }
+                                    } catch(e) {}
+                                }
+                            });
+                        }
                     });
                 }
             });
@@ -473,6 +553,16 @@
             var valorUnitario = $('#valor_unitario').val();
             var cantidad = $('#cantidad').val();
             var descuento = $('#descuento').val();
+            var recetaSelect = $('#receta_asociada');
+            var recetaId = recetaSelect.val();
+            var recetaNombre = recetaSelect.find(':selected').data('nombre') || '';
+            var recetaCosto = parseFloat(recetaSelect.find(':selected').data('costo-prep')) || parseFloat(recetaSelect.find(':selected').data('costo')) || 0;
+
+            // Si hay receta seleccionada (por defecto o manual), usar su costo total de preparación como valor unitario
+            if (recetaId) {
+                valorUnitario = recetaCosto;
+                $('#valor_unitario').val(valorUnitario);
+            }
 
             if (!categoria || !productoVendido || !valorUnitario || !cantidad || !descuento) {
                 alert('Por favor, complete todos los campos.');
@@ -484,12 +574,28 @@
                 producto_vendido: productoVendido,
                 valor_unitario: valorUnitario,
                 cantidad: cantidad,
-                descuento: descuento
+                descuento: descuento,
+                receta_id: recetaId || null,
+                receta_nombre: recetaNombre || null,
+                receta_costo_porcion: recetaId ? recetaCosto : null
             };
 
             var productos = JSON.parse(localStorage.getItem('productos')) || [];
             productos.push(producto);
             localStorage.setItem('productos', JSON.stringify(productos));
+
+            // Adjuntar receta asociada si existe
+            var recetasAsociadas = JSON.parse(localStorage.getItem('recetas_asociadas')) || {};
+            if (recetasAsociadas[productoVendido]) {
+                var recetas = recetasAsociadas[productoVendido];
+                // Guardar un espejo del arreglo con recetas anidadas por producto
+                var productosConRecetas = JSON.parse(localStorage.getItem('productos_con_recetas')) || [];
+                productosConRecetas.push({
+                    producto_vendido: productoVendido,
+                    recetas: recetas
+                });
+                localStorage.setItem('productos_con_recetas', JSON.stringify(productosConRecetas));
+            }
 
             actualizarListaProductos();
             $('#modalForm').modal('hide');
@@ -651,7 +757,7 @@
         localStorage.clear();
     });
 
-    $('#submitForm').click(function() {
+        $('#submitForm').click(function() {
         var productos = JSON.parse(localStorage.getItem('productos')) || [];
 
         if (productos.length === 0) {
@@ -672,6 +778,9 @@
         var valorTotal = $('#valor_total').val();
         var num_referencia = $('#num_referencia').val();
 
+            // Enviar también recetas asociadas si existen
+            var productosConRecetas = localStorage.getItem('productos_con_recetas') || '[]';
+
         // Enviar datos mediante AJAX
         $.ajax({
             url: '<?php echo base_url('/admin/registrar'); ?>',
@@ -683,7 +792,8 @@
                 identificacion_cliente: identificacionCliente,
                 correo_cliente: correoCliente,
                 valor_total: valorTotal,
-                num_referencia: num_referencia
+                    num_referencia: num_referencia,
+                    productos_con_recetas: productosConRecetas
             },
             success: function(response) {
                 var res = JSON.parse(response);

@@ -69,6 +69,21 @@
                                                 </div>
                                             </div>
                                         </div><!-- .col -->
+                                        <div class="col-xxl-6 col-lg-4 col-sm-6">
+                                            <div class="card card-bordered product-card">
+                                                <div class="product-thumb">
+                                                    <a href="<?php echo base_url() ?>admin/recetas">
+                                                        <img class="card-img-top" src="<?php echo base_url() ?>assets/images/fondo_card.jpg" alt="">
+                                                    </a>
+                                                </div>
+                                                <div class="card-inner text-center">
+                                                    <ul class="product-tags">
+                                                        <li><a href="<?php echo base_url() ?>admin/recetas" class="btn btn-primary"><span style="color: white;">Acceder</span></a></li>
+                                                    </ul>
+                                                    <h3 class="product-title">Módulo de Recetas</h3>
+                                                </div>
+                                            </div>
+                                        </div><!-- .col -->
                                     </div><!-- .nk-block -->
                                 </div>
                             </div>

@@ -218,7 +218,6 @@
                                             </div>
                                         </div>
 
-                                        <input type="hidden" name="sede" id="hidden_sede" value="">
                                         <div class="row g-gs">
                                             <div class="col-md-12 mt-3">
                                                 <div class="form-group">
@@ -277,16 +276,9 @@
     var modalProductForm = new bootstrap.Modal(document.getElementById('modalProductForm'));
 
     const sedeSelect = document.getElementById('sede');
-    const hiddenSedeInput = document.getElementById('hidden_sede');
     const modalSedeSelect = document.getElementById('modal_sede');
     
-    sedeSelect.addEventListener('change', function() {
-        hiddenSedeInput.value = this.value;
-    });
-    
-    modalSedeSelect.addEventListener('change', function() {
-        hiddenSedeInput.value = this.value;
-    });
+    // Sin campo oculto: la sede se toma directamente del select del modal (name="sede")
     // Función para abrir el modal en modo de edición
     function editProduct(id, nombre, presentacion, cantidad, categoria, sede, valor_unitario) {
         modalProductForm.show();
@@ -297,9 +289,7 @@
         const modalSedeSelect = document.getElementById('modal_sede');
         modalSedeSelect.value = sede;
 
-        // Actualizar el campo oculto de sede
-        const hiddenSedeInput = document.getElementById('hidden_sede');
-        hiddenSedeInput.value = sede;
+        // La sede se envía desde el select del modal
 
         const presentacionSelect = document.getElementById('presentacion');
         if (presentacionSelect.querySelector(`option[value="${presentacion}"]`)) {

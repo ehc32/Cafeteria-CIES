@@ -38,6 +38,32 @@ class Ventas_model extends CI_Model
         return $query->result();
     }
 
+    /**
+     * Obtener catálogo completo decodificado desde la tabla ventas
+     * Retorna arreglo plano con: categoria, producto_vendido, valor_unitario, descuento
+     */
+    public function get_catalogo_completo()
+    {
+        $catalogo = array();
+        $query = $this->db->get($this->table);
+        $rows = $query->result();
+        foreach ($rows as $row) {
+            $detalles = json_decode($row->detalles, true);
+            if (is_array($detalles) && isset($detalles['categoria']) && isset($detalles['productos']) && is_array($detalles['productos'])) {
+                $categoria = $detalles['categoria'];
+                foreach ($detalles['productos'] as $producto) {
+                    $catalogo[] = array(
+                        'categoria' => $categoria,
+                        'producto_vendido' => isset($producto['producto_vendido']) ? $producto['producto_vendido'] : '',
+                        'valor_unitario' => isset($producto['valor_unitario']) ? floatval($producto['valor_unitario']) : 0,
+                        'descuento' => isset($producto['descuento']) ? floatval($producto['descuento']) : 0,
+                    );
+                }
+            }
+        }
+        return $catalogo;
+    }
+
     public function productos_por_categoria($categoria)
     {
         $this->db->where("JSON_UNQUOTE(JSON_EXTRACT(detalles, '$.categoria')) = ", $categoria);
