@@ -9,6 +9,7 @@ class Ventas_register_controller extends Core_Controller
         $this->load->model('Ventas_Register_Model');
         $this->load->model('Settings_Model');
         $this->load->model('Ventas_model');
+        $this->load->model('Recetas_model');
         $this->load->model('Users_model');
         $this->load->helper('custom_helper');
         
@@ -41,26 +42,51 @@ class Ventas_register_controller extends Core_Controller
     {
         $vendedor_username = $this->Users_model->get_user_username();
         $productosJson = $this->input->post('productos_vendidos');
+        $productosConRecetasJson = $this->input->post('productos_con_recetas');
         $productosVendidos = array();
+        $recetasPorProducto = array();
 
         if ($productosJson && is_string($productosJson)) {
             $productos = json_decode($productosJson, true); 
 
             if (is_array($productos) && !empty($productos)) {
                 foreach ($productos as $producto) {
-
                     if (isset($producto['producto_vendido']) && isset($producto['valor_unitario']) && isset($producto['cantidad'])) {
                         $valorUnitario = (float)$producto['valor_unitario'];
                         $cantidad = (int)$producto['cantidad'];
-
                         $subtotal = $valorUnitario * $cantidad;
 
-                        $productosVendidos[] = array(
-                            'producto' => $producto['producto_vendido'],
+                        // Si viene una receta seleccionada, mostrar el nombre de la receta
+                        $esReceta = !empty($producto['receta_id']);
+                        $nombreMostrar = $esReceta && !empty($producto['receta_nombre'])
+                            ? $producto['receta_nombre']
+                            : $producto['producto_vendido'];
+
+                        $item = array(
+                            'producto' => $nombreMostrar,
                             'valor_unitario' => $valorUnitario,
                             'cantidad' => $cantidad,
                             'subtotal' => $subtotal
                         );
+                        // Campos extra informativos (no afectan listados actuales)
+                        if ($esReceta) {
+                            $item['es_receta'] = true;
+                            $item['receta_id'] = (int) $producto['receta_id'];
+                            $item['producto_base'] = $producto['producto_vendido'];
+                        }
+                        $productosVendidos[] = $item;
+                    }
+                }
+            }
+        }
+
+        // Índice de recetas asociadas por nombre de producto (si llegaron)
+        if ($productosConRecetasJson && is_string($productosConRecetasJson)) {
+            $arr = json_decode($productosConRecetasJson, true);
+            if (is_array($arr)) {
+                foreach ($arr as $item) {
+                    if (!empty($item['producto_vendido']) && !empty($item['recetas'])) {
+                        $recetasPorProducto[$item['producto_vendido']] = $item['recetas'];
                     }
                 }
             }
@@ -87,8 +113,32 @@ class Ventas_register_controller extends Core_Controller
             'created' => date('Y-m-d H:i:s')
         );
 
-        // Guardar la venta y mostrar el mensaje correspondiente
-        if ($this->Ventas_Register_Model->save($data)) {
+        // Guardar la venta y descontar inventario por recetas asociadas
+        $this->db->trans_start();
+        $ventaOk = $this->Ventas_Register_Model->save($data);
+
+        // Por cada producto vendido, si existe receta seleccionada en el payload principal, descontar
+        // Notar que en el JSON principal de productos se incluyeron campos receta_id/receta_costo_porcion.
+        if ($ventaOk && !empty($productos)) {
+            foreach ($productos as $producto) {
+                // Si viene receta_id, usar cantidad como número de preparaciones
+                $recetaId = isset($producto['receta_id']) ? $producto['receta_id'] : null;
+                $cantidadPreparada = isset($producto['cantidad']) ? (float)$producto['cantidad'] : 0;
+                if ($recetaId && $cantidadPreparada > 0) {
+                    $ok = $this->Recetas_model->descontar_inventario_por_receta($recetaId, $cantidadPreparada);
+                    if (!$ok) {
+                        $this->db->trans_rollback();
+                        $this->session->set_flashdata('error', 'Stock insuficiente para preparar la receta asociada a ' . $producto['producto_vendido']);
+                        redirect($_SERVER['HTTP_REFERER']);
+                        return;
+                    }
+                }
+            }
+        }
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() && $ventaOk) {
             $this->session->set_flashdata('success', "¡Venta registrada exitosamente!");
             redirect($_SERVER['HTTP_REFERER']); // Recarga la página anterior
         } else {

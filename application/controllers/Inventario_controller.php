@@ -69,6 +69,7 @@ class   Inventario_controller extends Core_Controller
                 'presentacion' => $this->input->post('presentacion'),
                 'cantidad' => $this->input->post('cantidad'),
                 'categoria' => $this->input->post('categoria'),
+                'valor_unitario' => $this->input->post('valor_unitario') ? floatval($this->input->post('valor_unitario')) : 0,
                 'sede' => $sede
             );
         } else {
@@ -83,14 +84,15 @@ class   Inventario_controller extends Core_Controller
             $data['nombre'] = $currentData->nombre;
             $data['presentacion'] = $currentData->presentacion;
             $data['categoria'] = $currentData->categoria;
+            $data['valor_unitario'] = $currentData->valor_unitario;
         }
 
         // Lógica para agregar o actualizar el producto
         if (empty($id)) {
             if ($sede == 'CIES') {
-                $result = $this->Inventario_model->add_product($data);
+                $result = $this->Inventario_model->add_product();
             } elseif ($sede == 'Comercio') {
-                $result = $this->Inventario_comercio_model->add_product($data);
+                $result = $this->Inventario_comercio_model->add_product();
             }
             $this->session->set_flashdata(
                 $result ? 'success' : 'error',
@@ -142,13 +144,19 @@ class   Inventario_controller extends Core_Controller
     
     public function get_productos_by_sede()
     {
-        $this->load->model('Inventario_comercio_model');
         $sede = $this->input->post('sede');
         if ($sede == 'CIES') {
             $productos = $this->Inventario_model->get_all();
+            // Agregar campo sede a cada producto
+            foreach ($productos as $producto) {
+                $producto->sede = 'CIES';
+            }
         } elseif ($sede == 'Comercio') {
-            $this->load->model('Inventario_comercio_model');
             $productos = $this->Inventario_comercio_model->get_all();
+            // Agregar campo sede a cada producto
+            foreach ($productos as $producto) {
+                $producto->sede = 'Comercio';
+            }
         } else {
             $productos = array();
         }

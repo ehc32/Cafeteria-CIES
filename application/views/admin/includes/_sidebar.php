@@ -76,7 +76,14 @@ defined('BASEPATH') or exit('No direct script access allowed'); ?>
                         </a>
                     </li><!-- .nk-menu-item -->
 
-                    <!-- .nk-menu-item -->
+                    <li class="nk-menu-item active current-page">
+                        <a href="<?php echo base_url() ?>admin/recetas" class="nk-menu-link">
+                            <span class="nk-menu-icon"><em class="icon ni ni-coffee"></em></span>
+                            <span class="nk-menu-text">Recetas</span>
+                        </a>
+                    </li><!-- .nk-menu-item -->
+
+
 
                     
                     <li class="nk-menu-item has-sub">

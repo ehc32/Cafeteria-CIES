@@ -82,19 +82,29 @@ $route['admin/email-settings']['GET']     = 'email_controller';
 
 // Inventario 
 $route['admin/inventario']['GET']             = 'inventario_controller/inventario'; 
-$route['admin/inventario-comercio']['GET']             = 'inventario__comercio_controller/inventario';
+$route['admin/inventario-comercio']['GET']             = 'inventario_comercio_controller/inventario';
 $route['admin/inventario/create']['GET']      = 'inventario_controller/create';    
 $route['admin/inventario/create']['POST']     = 'inventario_controller/create';     
 $route['admin/inventario/edit/(:num)']['GET'] = 'inventario_controller/edit/$id'; 
 $route['admin/inventario/edit/(:num)']['POST'] = 'inventario_controller/edit/$id';  
 $route['admin/inventario/delete/(:num)']['POST'] = 'inventario_controller/delete/$id';
+$route['admin/inventario/delete']['POST'] = 'inventario_controller/delete';
+$route['Inventario_controller/get_productos_by_sede']['POST'] = 'inventario_controller/get_productos_by_sede';
+$route['inventario_controller/registerProduct']['POST'] = 'inventario_controller/registerProduct';
 
-$route['admin/inventario/create']['GET']      = 'inventario_comercio_controller/create';    
-$route['admin/inventario/create']['POST']     = 'inventario_comercio_controller/create';     
-$route['admin/inventario/edit/(:num)']['GET'] = 'inventario_comercio_controller/edit/$id'; 
-$route['admin/inventario/edit/(:num)']['POST'] = 'inventario_comercio_controller/edit/$id';  
-$route['admin/inventario/delete/(:num)']['POST'] = 'inventario_comercio_controller/delete/$id';
 
+
+// Rutas para Recetas
+$route['admin/recetas'] = 'Recetas_controller/index';
+$route['admin/recetas/add'] = 'Recetas_controller/add';
+$route['admin/recetas/update/(:num)'] = 'Recetas_controller/update/$1';
+$route['admin/recetas/delete'] = 'Recetas_controller/delete';
+$route['admin/recetas/get_receta'] = 'Recetas_controller/get_receta';
+$route['admin/recetas/get_receta_por_nombre']['GET'] = 'Recetas_controller/get_receta_por_nombre';
+$route['admin/recetas/view/(:num)'] = 'Recetas_controller/view/$1';
+$route['admin/recetas/duplicar/(:num)'] = 'Recetas_controller/duplicar/$1';
+$route['admin/recetas/search'] = 'Recetas_controller/search';
+$route['admin/recetas/recalcular_costos'] = 'Recetas_controller/recalcular_costos';
 
 
 
