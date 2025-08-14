@@ -127,6 +127,24 @@ class Ventas_Register_Model extends CI_Model
         return $query->result();
     }
 
+    /**
+     * Obtiene todas las ventas filtradas sin límite para exportación
+     */
+    public function obtener_ventas_filtradas_exportacion($fechaInicio, $fechaFinal)
+    {
+        // Convertir las fechas para incluir todo el día
+        $fechaInicioCompleta = $fechaInicio . ' 00:00:00';
+        $fechaFinalCompleta = $fechaFinal . ' 23:59:59';
+        
+        $this->db->select('id, productos_vendidos, descuento, valor_total, created, vendedor_username, num_referencia');
+        $this->db->where('created >=', $fechaInicioCompleta);
+        $this->db->where('created <=', $fechaFinalCompleta);
+        $this->db->order_by('created', 'DESC');
+        // Sin límite para exportación completa
+        $query = $this->db->get('ventas_registradas');
+        return $query->result();
+    }
+
     // data de los input de fecha
     public function input_date_values()
     {

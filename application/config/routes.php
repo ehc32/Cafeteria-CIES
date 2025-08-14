@@ -110,6 +110,11 @@ $route['admin/ventas-detalles/(:any)']['GET'] = 'Ventas_register_controller/deta
 $route['admin/imprimir-factura/(:any)']['GET'] = 'Ventas_register_controller/imprimir_factura/$1';
 $route['admin/ventas/ventasFiltro']['GET'] = 'ventas_controller/ventasFiltro';
 
+// Rutas para exportación completa de ventas
+$route['admin/ventas_register_controller/export_xlsx']['GET'] = 'Ventas_register_controller/export_xlsx';
+$route['admin/ventas_register_controller/export_csv']['GET'] = 'Ventas_register_controller/export_csv';
+$route['admin/ventas_register_controller/export_pdf']['GET'] = 'Ventas_register_controller/export_pdf';
+
 $route['admin/entrega_turno']['GET']           = 'entrega_controller/vista_entrega_turno';
 $route['entrega/entregar_turno'] = 'entrega_controller/entregar_turno';
 $route['admin/historial_turnos']['GET']           = 'entrega_controller/listar_historico';

@@ -128,17 +128,29 @@ function inicializarDataTable() {
             {
                 extend: 'excel',
                 text: '<em class="icon ni ni-file-xls"></em>',
-                className: 'btn btn-outline-success btn-sm'
+                className: 'btn btn-outline-success btn-sm',
+                action: function() {
+                    exportarXLSX();
+                    return false; // Prevenir la exportación por defecto
+                }
             },
             {
                 extend: 'csv',
                 text: '<em class="icon ni ni-file-csv"></em>',
-                className: 'btn btn-outline-info btn-sm'
+                className: 'btn btn-outline-info btn-sm',
+                action: function() {
+                    exportarCSV();
+                    return false; // Prevenir la exportación por defecto
+                }
             },
             {
                 extend: 'pdf',
                 text: '<em class="icon ni ni-file-pdf"></em>',
-                className: 'btn btn-outline-danger btn-sm'
+                className: 'btn btn-outline-danger btn-sm',
+                action: function() {
+                    exportarPDF();
+                    return false; // Prevenir la exportación por defecto
+                }
             }
         ],
         "language": {
@@ -188,8 +200,23 @@ function validarFechas(e) {
  * @param {string} tipo - Tipo de alerta (success, error, warning, info)
  */
 function mostrarAlerta(mensaje, tipo = 'info') {
-    // Puedes usar tu librería de alertas preferida aquí
-    alert(mensaje);
+    // Verificar si existe la librería de alertas del tema
+    if (typeof NioApp !== 'undefined' && NioApp.Toast) {
+        NioApp.Toast(mensaje, tipo);
+    } else if (typeof toastr !== 'undefined') {
+        toastr[tipo](mensaje);
+    } else if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: tipo.charAt(0).toUpperCase() + tipo.slice(1),
+            text: mensaje,
+            icon: tipo,
+            timer: 3000,
+            showConfirmButton: false
+        });
+    } else {
+        // Fallback a alert nativo
+        alert(mensaje);
+    }
 }
 
 // ===================================
@@ -245,6 +272,83 @@ $(document).ready(function() {
 });
 
 // ===================================
+// FUNCIONES DE EXPORTACIÓN COMPLETA
+// ===================================
+
+/**
+ * Exporta todas las ventas filtradas a XLSX
+ */
+function exportarXLSX() {
+    const fechaInicio = $('#fechaInicio').val();
+    const fechaFinal = $('#fechaFinal').val();
+    
+    let url = baseUrl + 'admin/ventas_register_controller/export_xlsx';
+    const params = [];
+    
+    if (fechaInicio) params.push('fecha_inicio=' + encodeURIComponent(fechaInicio));
+    if (fechaFinal) params.push('fecha_final=' + encodeURIComponent(fechaFinal));
+    
+    if (params.length > 0) {
+        url += '?' + params.join('&');
+    }
+    
+    // Crear un enlace temporal y hacer clic en él
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = '';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+/**
+ * Exporta todas las ventas filtradas a CSV
+ */
+function exportarCSV() {
+    const fechaInicio = $('#fechaInicio').val();
+    const fechaFinal = $('#fechaFinal').val();
+    
+    let url = baseUrl + 'admin/ventas_register_controller/export_csv';
+    const params = [];
+    
+    if (fechaInicio) params.push('fecha_inicio=' + encodeURIComponent(fechaInicio));
+    if (fechaFinal) params.push('fecha_final=' + encodeURIComponent(fechaFinal));
+    
+    if (params.length > 0) {
+        url += '?' + params.join('&');
+    }
+    
+    // Crear un enlace temporal y hacer clic en él
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = '';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+/**
+ * Exporta todas las ventas filtradas a PDF
+ */
+function exportarPDF() {
+    const fechaInicio = $('#fechaInicio').val();
+    const fechaFinal = $('#fechaFinal').val();
+    
+    let url = baseUrl + 'admin/ventas_register_controller/export_pdf';
+    const params = [];
+    
+    if (fechaInicio) params.push('fecha_inicio=' + encodeURIComponent(fechaInicio));
+    if (fechaFinal) params.push('fecha_final=' + encodeURIComponent(fechaFinal));
+    
+    if (params.length > 0) {
+        url += '?' + params.join('&');
+    }
+    
+    // Abrir en nueva ventana para imprimir
+    window.open(url, '_blank');
+}
+
+// ===================================
 // EXPORTAR FUNCIONES (si es necesario)
 // ===================================
 if (typeof module !== 'undefined' && module.exports) {
@@ -253,6 +357,9 @@ if (typeof module !== 'undefined' && module.exports) {
         calcularValorTotal,
         inicializarDataTable,
         validarFechas,
-        mostrarAlerta
+        mostrarAlerta,
+        exportarXLSX,
+        exportarCSV,
+        exportarPDF
     };
 } 
